@@ -17,7 +17,6 @@ export const TableComponent = () => {
   }, [dispatch]);
   const students = useSelector((state) => state.students.students);
   const handleDeleteStudent = (id) => {
-    console.log('ID', id);
     dispatch(deleteStudent(id));
   };
   return (
@@ -25,7 +24,8 @@ export const TableComponent = () => {
       <Table sx={{ minWidth: 650 }} aria-label='simple table'>
         <TableHead>
           <TableRow>
-            <TableCell>Name</TableCell>
+            <TableCell>Image</TableCell>
+            <TableCell align='right'>Name</TableCell>
             <TableCell align='right'>Age</TableCell>
             <TableCell align='right'>Address</TableCell>
             <TableCell align='right'>Action</TableCell>
@@ -38,8 +38,9 @@ export const TableComponent = () => {
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
               <TableCell component='th' scope='row'>
-                {student.name}
+                <img style={{ height: '100px' }} src={student.image} alt='' />
               </TableCell>
+              <TableCell align='right'>{student.name}</TableCell>
               <TableCell align='right'>{student.age}</TableCell>
               <TableCell align='right'>{student.address}</TableCell>
               <TableCell align='right'>

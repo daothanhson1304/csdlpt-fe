@@ -20,14 +20,14 @@ export const addStudent = createAsyncThunk(
   'student/addStudent',
   async (student, thunkAPI) => {
     const response = await studentServices.postStudent(student);
-    return { ...student, id: response.data };
+    return response.data;
   }
 );
 export const deleteStudent = createAsyncThunk(
   'student/deleteStudent',
   async (id, thunkAPI) => {
-    await studentServices.deleteStudent(id);
-    return id;
+    const response = await studentServices.deleteStudent(id);
+    return response.data;
   }
 );
 export const studentSlice = createSlice({
@@ -40,15 +40,12 @@ export const studentSlice = createSlice({
     });
     builder
       .addCase(addStudent.fulfilled, (state, action) => {
-        console.log('actionPayload', action.payload);
-        state.students.push(action.payload);
+        state.students = [...action.payload];
       })
       .addCase(addStudent.rejected, (state, action) => {});
     builder
       .addCase(deleteStudent.fulfilled, (state, action) => {
-        state.students = state.students.filter(
-          (student) => student.id !== action.payload
-        );
+        state.students = [...action.payload];
       })
       .addCase(deleteStudent.rejected, (state, action) => {});
   },

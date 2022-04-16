@@ -15,9 +15,14 @@ import AddIcon from '@mui/icons-material/Add';
 import TextField from '@mui/material/TextField';
 import { createStyles, makeStyles } from '@mui/styles';
 import { Grid } from '@mui/material';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { addStudent } from '../feature/student/StudentSlice';
 import { FormProvider, useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
+import CardMedia from '@mui/material/CardMedia';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -34,12 +39,27 @@ const useStyles = makeStyles(() =>
     },
   })
 );
-
+const schema = yup
+  .object({
+    name: yup.string().required(),
+    age: yup.number().required(),
+    address: yup.string().required(),
+  })
+  .required();
+const defaultValues = {
+  name: '',
+  address: '',
+  age: 0,
+};
 export default function MenuAppBar() {
+  const methods = useForm({
+    resolver: yupResolver(schema),
+    defaultValues,
+  });
   const [auth, setAuth] = React.useState(true);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [open, setOpen] = React.useState(false);
-  const { register, handleSubmit } = useForm();
+  const [file, setFile] = React.useState('');
   const dispatch = useDispatch();
 
   const handleClickOpen = () => {
@@ -49,14 +69,19 @@ export default function MenuAppBar() {
   const handleClose = () => {
     setAnchorEl(null);
     setOpen(false);
+    methods.reset();
+    setFile('');
   };
   const onSubmit = (data) => {
-    dispatch(addStudent(data));
+    dispatch(addStudent({ ...data, image: file }));
     handleClose();
+  };
+  const handleChange = (event) => {
+    let url = URL.createObjectURL(event.target.files[0]);
+    setFile(url);
   };
 
   const classes = useStyles();
-
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position='static'>
@@ -90,51 +115,68 @@ export default function MenuAppBar() {
                 aria-labelledby='alert-dialog-title'
                 aria-describedby='alert-dialog-description'
               >
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <DialogTitle id='alert-dialog-title'>
-                    {'Add New Student'}
-                  </DialogTitle>
-                  <DialogContent className={classes.flex}>
-                    <DialogContentText id='alert-dialog-description'>
-                      <Grid className={classes.grid}>
-                        <Grid item>
-                          <TextField
-                            {...register('name')}
-                            required
-                            label='Name'
-                          />
+                <FormProvider {...methods}>
+                  <form onSubmit={methods.handleSubmit(onSubmit)}>
+                    <DialogTitle id='alert-dialog-title'>
+                      {'Add New Student'}
+                    </DialogTitle>
+                    <DialogContent className={classes.flex}>
+                      <DialogContentText id='alert-dialog-description'>
+                        <Grid className={classes.grid}>
+                          <Grid item>
+                            <TextField
+                              {...methods.register('name')}
+                              label='Name'
+                            />
+                          </Grid>
+                          <Grid item>
+                            <TextField
+                              {...methods.register('age')}
+                              label='Age'
+                            />
+                          </Grid>
+                          <Grid item>
+                            <TextField
+                              {...methods.register('address')}
+                              label='Address'
+                            />
+                          </Grid>
+                          <Grid item>
+                            <TextField
+                              label='Image'
+                              type='file'
+                              onChange={handleChange}
+                            />
+                          </Grid>
+
+                          {file.length > 0 && (
+                            <Grid>
+                              <Card className={classes.paperRoot}>
+                                <CardActionArea>
+                                  <CardMedia
+                                    component='img'
+                                    alt='Contemplative Reptile'
+                                    height='140'
+                                    image={file}
+                                    title='Contemplative Reptile'
+                                  />
+                                </CardActionArea>
+                              </Card>
+                            </Grid>
+                          )}
                         </Grid>
-                        <Grid item>
-                          <TextField
-                            {...register('age')}
-                            required
-                            label='Age'
-                          />
-                        </Grid>
-                        <Grid item>
-                          <TextField
-                            {...register('address')}
-                            required
-                            label='Address'
-                          />
-                        </Grid>
-                      </Grid>
-                    </DialogContentText>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button
-                      color='primary'
-                      variant='contained'
-                      onClick={onSubmit}
-                      type='submit'
-                    >
-                      Save
-                    </Button>
-                    <Button onClick={handleClose} autoFocus>
-                      Cancel
-                    </Button>
-                  </DialogActions>
-                </form>
+                      </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button color='primary' variant='contained' type='submit'>
+                        Save
+                      </Button>
+                      <Button onClick={handleClose} autoFocus>
+                        Cancel
+                      </Button>
+                    </DialogActions>
+                  </form>
+                </FormProvider>
               </Dialog>
             </div>
           )}
